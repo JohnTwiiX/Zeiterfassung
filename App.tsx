@@ -1,98 +1,83 @@
-/**
- * Sample React Native App
- * https://github.com/facebook/react-native
- *
- * @format
- */
-
 import React from 'react';
-import type {PropsWithChildren} from 'react';
 import {
-  SafeAreaView,
-  ScrollView,
-  StatusBar,
+  AppState,
   StyleSheet,
-  Text,
-  useColorScheme,
   View,
 } from 'react-native';
+import Header from './components/Header';
+import SystemNavigationBar from 'react-native-system-navigation-bar';
+import TimeTable from './components/TimeTable';
+import StartStopButton from './components/StartStopButton';
+import PlusButton from './components/PlusButton';
+import AddTimeDialog from './components/AddTimeDialog';
+import HistoryButton from './components/HistoryButton';
+import HistoryDialog from './components/HistoryDialog';
+import firestore from '@react-native-firebase/firestore';
 
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
 
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
 
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
+export function fullscreen() {
+  SystemNavigationBar.fullScreen(true);
+}
+
+export function currentDate(dateValue?: string) {
+  // Aktuelles Datum erstellen
+  let currentDate
+  if (dateValue) {
+    const [day, month, year] = dateValue.split(".");
+    // Beachten Sie, dass der Monat 0-basiert ist, daher subtrahieren Sie 1
+    currentDate = new Date(Number(year), Number(month) - 1, Number(day));
+  } else {
+    currentDate = new Date();
+  }
+
+  const date = currentDate.toLocaleString('de-DE', { month: 'long', year: 'numeric' });
+  const dateArray = date.split(' ')
+  const formattedDate = `Sandra-${dateArray[1]}-${dateArray[0]}`;
+  console.log(formattedDate);
+
+  saveNameInStorage(formattedDate)
+  return formattedDate
+}
+
+async function saveNameInStorage(date: string) {
+  const querySnapshot = await firestore()
+    .collection('Sandra-All')
+    .where('title', '==', date)
+    .get();
+
+  const item = {
+    title: date
+  }
+
+  if (querySnapshot.empty) {
+    // Das Datum ist noch nicht vorhanden, füge das Dokument zur Sammlung hinzu
+    firestore()
+      .collection('Sandra-All')
+      .add(item)
+      .then(() => {
+        console.log('Dokument erfolgreich hinzugefügt.');
+      })
+      .catch(error => {
+        console.error('Fehler beim Hinzufügen des Dokuments:', error);
+      });
+  }
 }
 
 function App(): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-
-  const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
-  };
-
+  const [addTimeVisible, setAddTimeVisible] = React.useState(false);
+  const [historyVisible, setHistoryVisible] = React.useState(false);
+  fullscreen();
   return (
-    <SafeAreaView style={backgroundStyle}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
-      />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
-    </SafeAreaView>
+    <View style={{ flex: 1, backgroundColor: 'white' }}>
+      <Header />
+      <TimeTable />
+      <StartStopButton />
+      <PlusButton setAddTimeVisible={setAddTimeVisible} />
+      <HistoryButton setHistoryVisible={setHistoryVisible} />
+      <AddTimeDialog addTimeVisible={addTimeVisible} setAddTimeVisible={setAddTimeVisible} />
+      <HistoryDialog historyVisible={historyVisible} setHistoryVisible={setHistoryVisible} />
+    </View>
   );
 }
 
