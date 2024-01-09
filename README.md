@@ -1,4 +1,11 @@
+# WorktimeCapture
 This is a new [**React Native**](https://reactnative.dev) project, bootstrapped using [`@react-native-community/cli`](https://github.com/react-native-community/cli).
+
+You can track your worktime.
+
+I used for my app *Firebase* for storage datas.
+
+You can add and delete times with a Date and Timepicker from [`@react-native-community/datetimepicker`](https://github.com/henninghall/react-native-date-picker) 
 
 # Getting Started
 
@@ -55,9 +62,6 @@ Now that you have successfully run the app, let's modify it.
 
    For **iOS**: Hit <kbd>Cmd ⌘</kbd> + <kbd>R</kbd> in your iOS Simulator to reload the app and see your changes!
 
-## Congratulations! :tada:
-
-You've successfully run and modified your React Native App. :partying_face:
 
 ### Now what?
 
